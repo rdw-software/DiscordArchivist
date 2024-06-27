@@ -11,8 +11,12 @@ local client = discordia.Client()
 local ARCHIVAL_TIME_IN_SECONDS = 60
 local ARCHIVAL_TIME_IN_MILLISECONDS = ARCHIVAL_TIME_IN_SECONDS * 1000
 
-local stateFilePath = "state.json"
+local stateFilePath = config.archiveDirectory .. "/" .. "state.json"
 local state
+
+if not fs.existsSync(config.archiveDirectory) then
+	fs.mkdirSync(config.archiveDirectory)
+end
 
 if fs.existsSync(stateFilePath) then
 	local stateFile = assert(io.open(stateFilePath, "r"))
@@ -20,14 +24,14 @@ if fs.existsSync(stateFilePath) then
 	stateFile:close()
 	print("Restored state from " .. stateFilePath)
 else
-	print("No persistent state found (first run or missing state file)")
+	print("No persistent state found in " .. stateFilePath .. " (first run or missing state file?)")
 	state = {
 		channels = {}
 	}
 end
 
 local function fetchNewMessages()
-	print("Starting archival process...")
+	print("Starting archival process in directory " .. config.archiveDirectory .. "/")
 	 for guild in client.guilds:iter() do
 		print("\tProcessing server: " .. guild.id)
 		for channel in guild.textChannels:iter() do
@@ -63,8 +67,8 @@ local function fetchNewMessages()
 
 			if #newMessages > 0 then
 				local existingMessages = {}
-				if fs.existsSync(channel.id .. ".json") then
-					local file = assert(io.open(channel.id .. ".json", "r"))
+				if fs.existsSync(config.archiveDirectory .. "/" .. channel.id .. ".json") then
+					local file = assert(io.open(config.archiveDirectory .. "/" .. channel.id .. ".json", "r"))
 					existingMessages = json.decode(file:read("*a"))
 					file:close()
 				end
@@ -73,7 +77,7 @@ local function fetchNewMessages()
 					table.insert(existingMessages, message)
 				end
 
-				local file = assert(io.open(channel.id .. ".json", "w"))
+				local file = assert(io.open(config.archiveDirectory .. "/" .. channel.id .. ".json", "w"))
 				file:write(json.encode(existingMessages))
 				file:close()
 
