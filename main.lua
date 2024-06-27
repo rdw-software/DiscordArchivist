@@ -1,4 +1,5 @@
-local commands = require("commands")
+local config = require("config")
+local chatCommands = config.chatCommands
 
 local timer = require("timer")
 local json = require("json")
@@ -101,13 +102,8 @@ client:on("ready", function()
 end)
 
 client:on("messageCreate", function(message)
-	if message.guild then
-		local serverID = message.guild.id
-		local serverCommands = commands[serverID]
-
-		if commands and serverCommands[message.content] then
-			message.channel:send(serverCommands[message.content])
-		end
+	if chatCommands and chatCommands[message.content] then
+		message.channel:send(chatCommands[message.content])
 	end
 end)
 
