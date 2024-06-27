@@ -30,9 +30,9 @@ end
 local function fetchNewMessages()
 	print("Starting archival process in directory " .. config.archiveDirectory .. "/")
 	 for guild in client.guilds:iter() do
-		print("\tProcessing server: " .. guild.id)
+		print("\tProcessing server: " .. guild.name .. " (" .. guild.id .. ")")
 		for channel in guild.textChannels:iter() do
-			print("\t\tProcessing channel: " .. channel.id)
+			print("\t\tProcessing channel: #" .. channel.name .. " (" .. channel.id .. ")")
 			state.channels[channel.id] = state.channels[channel.id] or {}
 			local lastMessageId = state.channels[channel.id].lastMessageId
 			local newMessages = {}
