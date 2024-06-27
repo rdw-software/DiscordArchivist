@@ -8,11 +8,17 @@ local fs = require("fs")
 local discordia = require("discordia")
 local client = discordia.Client()
 
+local http = require("coro-http")
+
 local stateFilePath = config.archiveDirectory .. "/" .. "state.json"
 local state
 
 if not fs.existsSync(config.archiveDirectory) then
 	fs.mkdirSync(config.archiveDirectory)
+end
+
+if not fs.existsSync(config.attachmentsDirectory) then
+	fs.mkdirSync(config.attachmentsDirectory)
 end
 
 if fs.existsSync(stateFilePath) then
@@ -54,7 +60,9 @@ local function fetchNewMessages()
 						id = message.id,
 						content = message.content,
 						author = message.author.username,
-						timestamp = message.timestamp
+						timestamp = message.timestamp,
+						attachments = message.attachments or {},
+						downloadedAttachments = {},
 					})
 					lastMessageId = message.id
 				end
@@ -72,6 +80,20 @@ local function fetchNewMessages()
 
 				for _, message in ipairs(newMessages) do
 					table.insert(existingMessages, message)
+					for _, attachment in ipairs(message.attachments) do
+						print("Downloading message attachment: " .. attachment.url)
+						local res, data = http.request("GET", attachment.url)
+						if res.code == 200 then
+							local filePath = config.attachmentsDirectory .. "/" .. attachment.filename
+							local file = assert(io.open(filePath, 'wb'))
+							file:write(data)
+							file:close()
+							table.insert(message.downloadedAttachments, filePath)
+							print("Saved attachment to disk: " .. filePath)
+						else
+							print("Warning: Failed to fetch message attachment from " .. attachment.url .. " (response code: " .. res.code .. ")")
+						end
+					end
 				end
 
 				local file = assert(io.open(config.archiveDirectory .. "/" .. channel.id .. ".json", "w"))

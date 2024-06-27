@@ -43,3 +43,4 @@ luac.out
 gateway.json
 discord.token
 *.json
+/attachments
