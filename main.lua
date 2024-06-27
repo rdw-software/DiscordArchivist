@@ -133,7 +133,7 @@ client:on("messageCreate", function(message)
 	end
 end)
 
-local tokenFile = io.open("discord.token")
+local tokenFile = io.open("discord.token", "rb")
 assert(tokenFile, "Failed to read Discord API token from discord.token (no such file exists)")
 local token = tokenFile:read("*a")
 client:run("Bot " .. token)
