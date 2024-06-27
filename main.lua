@@ -91,6 +91,9 @@ end
 
 client:on("ready", function()
 	print("Logged in as ".. client.user.username)
+	if config.statusText then
+		client:setActivity(config.statusText)
+	end
 
 	timer.setInterval(ARCHIVAL_TIME_IN_MILLISECONDS, function()
 		local co = coroutine.create(fetchNewMessages)
