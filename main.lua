@@ -8,9 +8,6 @@ local fs = require("fs")
 local discordia = require("discordia")
 local client = discordia.Client()
 
-local ARCHIVAL_TIME_IN_SECONDS = 60
-local ARCHIVAL_TIME_IN_MILLISECONDS = ARCHIVAL_TIME_IN_SECONDS * 1000
-
 local stateFilePath = config.archiveDirectory .. "/" .. "state.json"
 local state
 
@@ -90,7 +87,7 @@ local function fetchNewMessages()
 			end
 		end
 	end
-	print("Archival process complete")
+	print("Archival process complete (will repeat every " .. config.messageFetchIntervalInSeconds .. " seconds)")
 end
 
 client:on("ready", function()
@@ -99,7 +96,7 @@ client:on("ready", function()
 		client:setActivity(config.statusText)
 	end
 
-	timer.setInterval(ARCHIVAL_TIME_IN_MILLISECONDS, function()
+	timer.setInterval(config.messageFetchIntervalInSeconds * 1000, function()
 		local co = coroutine.create(fetchNewMessages)
 		local status, err = coroutine.resume(co)
 		if not status then
